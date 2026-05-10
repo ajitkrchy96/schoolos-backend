@@ -25,9 +25,13 @@ public class AuthServiceImpl implements AuthService {
         AppUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Invalid username"));
 
-        if (!password.equals("password")) {
+        /*if (!password.equals("password")) {
+            throw new RuntimeException("Invalid password");
+        }*/
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
+
 
         AuthUserResponse authUser = AuthUserResponse.fromAppUser(user);
         return new AuthResponse(jwtUtil.generateToken(username), authUser);
