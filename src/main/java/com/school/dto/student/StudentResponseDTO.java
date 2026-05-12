@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentResponseDTO {
+public class    StudentResponseDTO {
 
     private Long id;
     private String firstName;
@@ -31,4 +31,11 @@ public class StudentResponseDTO {
     private String parentName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    private String fatherName;
+    private String motherName;
+    private String parentPhone;
+    private String parentEmail;
+    private String parentAddress;
+
 }

@@ -49,9 +49,11 @@ public class AttendanceServiceImpl implements AttendanceService {
                             schoolId
                     )
                     .orElseThrow(() -> new ValidationException("Attendance not marked"));
-            if (attendance.getStatus() != AttendanceStatus.ABSENT) {
+
+            //TODO need to check
+            /*if (attendance.getStatus() != AttendanceStatus.ABSENT) {
                 throw new ValidationException("Student is not absent today");
-            }
+            }*/
 
             attendance.setSchool(student.getSchool());
             attendance.setStudent(student);

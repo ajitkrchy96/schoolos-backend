@@ -116,3 +116,76 @@ VALUES (
            NOW(),
            NOW()
        );
+
+
+
+INSERT INTO schoolos.class (
+    school_id,
+    name,
+    created_at,
+    updated_at
+)
+VALUES
+    (1, 'Third', NOW(), NOW()),
+    (1, 'Fourth', NOW(), NOW()),
+    (1, 'Fifth', NOW(), NOW()),
+    (1, 'Sixth', NOW(), NOW()),
+    (1, 'Seventh', NOW(), NOW()),
+    (1, 'Eighth', NOW(), NOW()),
+    (1, 'Ninth', NOW(), NOW()),
+    (1, 'Tenth', NOW(), NOW());
+
+
+-- ============================================
+-- YESTERDAY ATTENDANCE
+-- ============================================
+
+INSERT INTO schoolos.student_attendance
+(
+    school_id,
+    student_id,
+    date,
+    status,
+    created_at,
+    updated_at
+)
+VALUES
+    (1, 1, CURRENT_DATE - INTERVAL '1 day', 'PRESENT', NOW(), NOW()),
+    (1, 2, CURRENT_DATE - INTERVAL '1 day', 'ABSENT', NOW(), NOW()),
+    (1, 3, CURRENT_DATE - INTERVAL '1 day', 'PRESENT', NOW(), NOW());
+
+-- ============================================
+-- TOMORROW ATTENDANCE
+-- ============================================
+
+INSERT INTO schoolos.student_attendance
+(
+    school_id,
+    student_id,
+    date,
+    status,
+    created_at,
+    updated_at
+)
+VALUES
+    (1, 1, CURRENT_DATE + INTERVAL '1 day', 'ABSENT', NOW(), NOW()),
+    (1, 2, CURRENT_DATE + INTERVAL '1 day', 'PRESENT', NOW(), NOW()),
+    (1, 3, CURRENT_DATE + INTERVAL '1 day', 'ABSENT', NOW(), NOW());
+
+-- ============================================
+-- DAY AFTER TOMORROW ATTENDANCE
+-- ============================================
+
+INSERT INTO schoolos.student_attendance
+(
+    school_id,
+    student_id,
+    date,
+    status,
+    created_at,
+    updated_at
+)
+VALUES
+    (1, 1, CURRENT_DATE + INTERVAL '2 day', 'PRESENT', NOW(), NOW()),
+    (1, 2, CURRENT_DATE + INTERVAL '2 day', 'ABSENT', NOW(), NOW()),
+    (1, 3, CURRENT_DATE + INTERVAL '2 day', 'PRESENT', NOW(), NOW());

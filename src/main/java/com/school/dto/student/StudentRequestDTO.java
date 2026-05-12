@@ -34,8 +34,9 @@ public class StudentRequestDTO {
     @Past(message = "Date of birth must be in the past")
     private LocalDate dob;
 
-    @NotBlank(message = "Admission number is required")
-    @Size(min = 3, max = 20, message = "Admission number must be between 3 and 20 characters")
+//    @NotBlank(message = "Admission number is required")
+//    @Size(min = 3, max = 20, message = "Admission number must be between 3 and 20 characters")
+//  Backed generating
     private String admissionNo;
 
     @NotBlank(message = "Phone number is required")

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class StudentMapper {
 
     public Student toEntity(StudentRequestDTO dto, School school, Parent parent,
-                           ClassEntity classEntity, Section section) {
+                           ClassEntity classEntity, Section section, String admissionNo) {
         if (dto == null) {
             return null;
         }
@@ -24,7 +24,7 @@ public class StudentMapper {
         student.setLastName(dto.getLastName());
         student.setGender(dto.getGender());
         student.setDob(dto.getDob());
-        student.setAdmissionNo(dto.getAdmissionNo());
+        student.setAdmissionNo(admissionNo);
         student.setPhone(dto.getPhone());
         student.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
         student.setSchool(school);
@@ -58,8 +58,12 @@ public class StudentMapper {
                 .sectionId(student.getSection() != null ? student.getSection().getId() : null)
                 .sectionName(student.getSection() != null ? student.getSection().getName() : null)
                 .parentId(student.getParent() != null ? student.getParent().getId() : null)
-                .parentName(student.getParent() != null ?
-                        student.getParent().getFatherName() + " " + student.getParent().getMotherName() : null)
+                .parentName(student.getParent() != null ? student.getParent().getFatherName() + " " + student.getParent().getMotherName() : null)
+                .fatherName(student.getParent() != null ? student.getParent().getFatherName() : null)
+                .motherName(student.getParent() != null ? student.getParent().getMotherName() : null)
+                .parentPhone(student.getParent() != null ? student.getParent().getPhone() : null)
+                .parentEmail(student.getParent() != null ? student.getParent().getEmail() : null)
+                .parentAddress(student.getParent() != null ? student.getParent().getAddress() : null)
                 .build();
     }
 
@@ -72,7 +76,8 @@ public class StudentMapper {
         student.setLastName(dto.getLastName());
         student.setGender(dto.getGender());
         student.setDob(dto.getDob());
-        student.setAdmissionNo(dto.getAdmissionNo());
+        //TODO We can not update
+        //student.setAdmissionNo(dto.getAdmissionNo());
         student.setPhone(dto.getPhone());
 
         if (parent != null) {

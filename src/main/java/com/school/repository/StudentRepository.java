@@ -70,4 +70,6 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Student> findAllWithRelations(Long schoolId);
 
     long countBySchoolIdAndStatus(Long schoolId, String status);
+
+    Long countBySchoolId(Long schoolId);
 }

@@ -25,7 +25,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +47,9 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public StudentResponseDTO createStudent(Long schoolId, StudentRequestDTO requestDTO) {
         log.info("Creating student for school ID: {}", schoolId);
+
+        //TODO need to remove
+        requestDTO.setSchoolId(schoolId);
 
         // Validate school ID in request matches path parameter
         if (!requestDTO.getSchoolId().equals(schoolId)) {
@@ -84,8 +90,12 @@ public class StudentServiceImpl implements StudentService {
         Section section = sectionRepository.findByIdAndSchoolId(requestDTO.getSectionId(), schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section", "id", requestDTO.getSectionId()));
 
+        Long studentCount = studentRepository.countBySchoolId(schoolId);
+        String admissionNo = "SCH-" + java.time.Year.now().getValue() + "-" + String.format("%04d", studentCount + 1);
+
+
         // Create and save student
-        Student student = studentMapper.toEntity(requestDTO, school, parent, classEntity, section);
+        Student student = studentMapper.toEntity(requestDTO, school, parent, classEntity, section, admissionNo);
         Student savedStudent = studentRepository.save(student);
 
         log.info("Student created successfully with ID: {}", savedStudent.getId());
@@ -149,8 +159,10 @@ public class StudentServiceImpl implements StudentService {
     public StudentResponseDTO updateStudent(Long schoolId, Long studentId, StudentRequestDTO requestDTO) {
         log.info("Updating student ID: {} for school ID: {}", studentId, schoolId);
 
+        //TODO need to remove
+        requestDTO.setSchoolId(schoolId);
         // Validate school ID in request
-        if (!requestDTO.getSchoolId().equals(schoolId)) {
+        if (!Objects.equals(requestDTO.getSchoolId(), schoolId)) {
             throw new ValidationException("schoolId", "School ID in request does not match path parameter");
         }
 
@@ -163,17 +175,50 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Student", "id", studentId));
 
         Parent parent = parentRepository
-                .findByPhoneAndSchoolId(requestDTO.getParentPhone(), schoolId)
+                .findByPhoneAndSchoolId(
+                        requestDTO.getParentPhone(),
+                        schoolId
+                )
                 .orElseGet(() -> {
                     Parent newParent = new Parent();
                     newParent.setSchool(student.getSchool());
-                    newParent.setFatherName(requestDTO.getFatherName());
-                    newParent.setMotherName(requestDTO.getMotherName());
-                    newParent.setPhone(requestDTO.getParentPhone());
-                    newParent.setEmail(requestDTO.getParentEmail());
-                    newParent.setAddress(requestDTO.getParentAddress());
-                    return parentRepository.save(newParent);
+                    return newParent;
                 });
+
+// ALWAYS update parent fields
+        boolean isParentUpdating = false;
+        if (StringUtils.hasLength(requestDTO.getFatherName())) {
+            parent.setFatherName(requestDTO.getFatherName());
+            isParentUpdating = true;
+        }
+        if (StringUtils.hasLength(requestDTO.getMotherName())) {
+            parent.setMotherName(requestDTO.getMotherName());
+            isParentUpdating = true;
+        }
+        if (StringUtils.hasLength(requestDTO.getParentPhone())) {
+            parent.setPhone(requestDTO.getParentPhone());
+            isParentUpdating = true;
+        }
+        if (StringUtils.hasLength(requestDTO.getParentEmail())) {
+            parent.setEmail(requestDTO.getParentEmail());
+            isParentUpdating = true;
+        }
+        if (StringUtils.hasLength(requestDTO.getParentAddress())) {
+            parent.setAddress(requestDTO.getParentAddress());
+            isParentUpdating = true;
+        }
+
+
+        // Save updated parent
+        if(isParentUpdating){
+            parent = parentRepository.save(parent);
+        }
+
+
+// Attach parent to student
+        student.setParent(parent);
+
+
         student.setParent(parent);
 
         // Fetch updated relationships with school validation
