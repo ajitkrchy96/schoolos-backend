@@ -1,6 +1,7 @@
 package com.school.repository;
 
 import com.school.model.Student;
+import com.school.utilenum.StudentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,11 +29,13 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     @Query("SELECT s FROM Student s WHERE s.school.id = :schoolId " +
             "AND (:classId IS NULL OR s.classEntity.id = :classId) " +
             "AND (:sectionId IS NULL OR s.section.id = :sectionId) " +
-            "AND s.status = 'ACTIVE' ")
+            "AND s.status = :status ")
     Page<Student> findBySchoolIdWithFilters(@Param("schoolId") Long schoolId,
                                             @Param("classId") Long classId,
                                             @Param("sectionId") Long sectionId,
+                                            @Param("status") StudentStatus status,
                                             Pageable pageable);
+
     // "AND (s.firstName LIKE %:searchTerm% OR s.lastName LIKE %:searchTerm% " +
 /*    @Query("SELECT s FROM Student s WHERE s.school.id = :schoolId " +
             "AND (LOWER(s.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(s.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
@@ -69,7 +72,31 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
             """)
     List<Student> findAllWithRelations(Long schoolId);
 
-    long countBySchoolIdAndStatus(Long schoolId, String status);
+    long countBySchoolIdAndStatus(Long schoolId, StudentStatus status);
 
     Long countBySchoolId(Long schoolId);
+
+    Page<Student> findBySchoolIdAndStatus(
+            Long schoolId,
+            StudentStatus status,
+            Pageable pageable
+    );
+
+    Page<Student> findBySchoolIdAndStatusAndFirstNameContainingIgnoreCase(
+            Long schoolId,
+            StudentStatus status,
+            String firstName,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT s FROM Student s 
+            WHERE s.school.id = :schoolId 
+            AND s.id = :studentId
+            """)
+    java.util.Optional<Student> findAllTypeOfStudentByIdAndSchoolId(@Param("studentId") Long studentId,
+                                                    @Param("schoolId") Long schoolId);
+
+    List<Student> findBySchoolIdAndStatusOrderByFirstNameAsc(Long schoolId, StudentStatus status);
+
 }

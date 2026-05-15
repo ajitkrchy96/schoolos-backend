@@ -3,7 +3,9 @@ package com.school.controller.student;
 import com.school.dto.student.StudentFilterDTO;
 import com.school.dto.student.StudentRequestDTO;
 import com.school.dto.student.StudentResponseDTO;
+import com.school.dto.student.StudentStatusUpdateRequest;
 import com.school.service.student.StudentService;
+import com.school.utilenum.StudentStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,15 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/schools/{schoolId}/students")
@@ -79,14 +73,16 @@ public class StudentController {
             @RequestParam(required = false) Long classId,
             @RequestParam(required = false) Long sectionId,
             @RequestParam(required = false) String searchTerm,
+            @RequestParam(required = false) StudentStatus status,
             @PageableDefault(size = 20, page = 0, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        log.info("GET request to fetch all students for school ID: {} with classId: {}, sectionId: {}, searchTerm: {}",
-                schoolId, classId, sectionId, searchTerm);
+        log.info("GET request to fetch all students for school ID: {} with classId: {}, sectionId: {}, searchTerm: {} status : {} ",
+                schoolId, classId, sectionId, searchTerm, status);
 
         StudentFilterDTO filterDTO = StudentFilterDTO.builder()
                 .classId(classId)
                 .sectionId(sectionId)
                 .searchTerm(searchTerm)
+                .status(status)
                 .build();
 
         Page<StudentResponseDTO> response = studentService.getAllStudents(schoolId, filterDTO, pageable);
@@ -144,4 +140,20 @@ public class StudentController {
         Page<StudentResponseDTO> response = studentService.searchStudents(schoolId, searchTerm, pageable);
         return ResponseEntity.ok(response);
     }
+
+ /*   @GetMapping
+    public ResponseEntity<Page<StudentResponseDTO>> getStudents(
+            @PathVariable Long schoolId,@RequestParam(required = false) StudentStatus status, Pageable pageable ) {
+        return ResponseEntity.ok(studentService.getStudents(schoolId,status,pageable));
+    }*/
+
+    @PatchMapping("/{studentId}/status")
+    public ResponseEntity<StudentResponseDTO> updateStudentStatus(
+            @PathVariable Long schoolId,
+            @PathVariable Long studentId,
+            @Valid @RequestBody StudentStatusUpdateRequest request) {
+        return ResponseEntity.ok(studentService.updateStudentStatus(schoolId, studentId, request));
+    }
+
+
 }

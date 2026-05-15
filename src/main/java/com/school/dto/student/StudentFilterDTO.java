@@ -1,5 +1,6 @@
 package com.school.dto.student;
 
+import com.school.utilenum.StudentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,7 @@ public class StudentFilterDTO {
 
     private Long classId;
     private Long sectionId;
-    private String status;
+    //private String status;
     private String searchTerm;
+    private StudentStatus status;
 }

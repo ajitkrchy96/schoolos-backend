@@ -30,6 +30,7 @@ public CorsFilter corsFilter() {
             "GET",
             "POST",
             "PUT",
+            "PATCH",
             "DELETE",
             "OPTIONS"
     ));

@@ -3,6 +3,7 @@ package com.school.service.impl;
 import com.school.dto.student.StudentFilterDTO;
 import com.school.dto.student.StudentRequestDTO;
 import com.school.dto.student.StudentResponseDTO;
+import com.school.dto.student.StudentStatusUpdateRequest;
 import com.school.exception.ResourceNotFoundException;
 import com.school.exception.UnauthorizedAccessException;
 import com.school.exception.ValidationException;
@@ -18,6 +19,7 @@ import com.school.repository.SchoolRepository;
 import com.school.repository.SectionRepository;
 import com.school.repository.StudentRepository;
 import com.school.service.student.StudentService;
+import com.school.utilenum.StudentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -49,16 +51,16 @@ public class StudentServiceImpl implements StudentService {
         log.info("Creating student for school ID: {}", schoolId);
 
         //TODO need to remove
-        requestDTO.setSchoolId(schoolId);
+        //requestDTO.setSchoolId(schoolId);
 
         // Validate school ID in request matches path parameter
-        if (!requestDTO.getSchoolId().equals(schoolId)) {
+        /*if (!requestDTO.getSchoolId().equals(schoolId)) {
             throw new ValidationException("schoolId", "School ID in request does not match path parameter");
-        }
+        }*/
 
-        if (studentRepository.existsByAdmissionNoAndSchoolId(requestDTO.getAdmissionNo(), schoolId)) {
+        /*if (studentRepository.existsByAdmissionNoAndSchoolId(requestDTO.getAdmissionNo(), schoolId)) {
            throw new ValidationException("admissionNo", "Admission number already exists for this school");
-        }
+        }*/
 
         // Validate school exists
         School school = schoolRepository.findById(schoolId)
@@ -130,15 +132,17 @@ public class StudentServiceImpl implements StudentService {
         Page<Student> studentPage;
 
         // Apply search filter if provided
+        StudentStatus status = filterDTO.getStatus() != null ? filterDTO.getStatus() : StudentStatus.ACTIVE;
         if (filterDTO.getSearchTerm() != null && !filterDTO.getSearchTerm().trim().isEmpty()) {
-            studentPage = studentRepository.searchBySchoolId(schoolId, filterDTO.getSearchTerm().trim(), pageable);
+            studentPage = studentRepository.searchBySchoolId(schoolId,  filterDTO.getSearchTerm().trim(), pageable);
         }
         // Apply class and section filters
-        else if (filterDTO.getClassId() != null || filterDTO.getSectionId() != null) {
+        else if (filterDTO.getClassId() != null || filterDTO.getSectionId() != null || filterDTO.getStatus() != null) {
             studentPage = studentRepository.findBySchoolIdWithFilters(
                     schoolId,
                     filterDTO.getClassId(),
                     filterDTO.getSectionId(),
+                    status,
                     pageable
             );
         }
@@ -160,11 +164,11 @@ public class StudentServiceImpl implements StudentService {
         log.info("Updating student ID: {} for school ID: {}", studentId, schoolId);
 
         //TODO need to remove
-        requestDTO.setSchoolId(schoolId);
+        //requestDTO.setSchoolId(schoolId);
         // Validate school ID in request
-        if (!Objects.equals(requestDTO.getSchoolId(), schoolId)) {
+        /*if (!Objects.equals(requestDTO.getSchoolId(), schoolId)) {
             throw new ValidationException("schoolId", "School ID in request does not match path parameter");
-        }
+        }*/
 
         if (!schoolRepository.existsById(schoolId)) {
             throw new ResourceNotFoundException("School", "id", schoolId);
@@ -253,7 +257,7 @@ public class StudentServiceImpl implements StudentService {
         Student student = studentRepository.findByIdAndSchoolId(studentId, schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", "id", studentId));
 
-        student.setStatus("INACTIVE");
+        student.setStatus(StudentStatus.INACTIVE);
         studentRepository.save(student);
 
         log.info("Student ID: {} soft deleted successfully", studentId);
@@ -272,7 +276,6 @@ public class StudentServiceImpl implements StudentService {
         if (!schoolRepository.existsById(schoolId)) {
             throw new ResourceNotFoundException("School", "id", schoolId);
         }
-
         Page<Student> studentPage = studentRepository.searchBySchoolId(schoolId, searchTerm.trim(), pageable);
 
         List<StudentResponseDTO> responseDTOs = studentPage.getContent()
@@ -282,4 +285,55 @@ public class StudentServiceImpl implements StudentService {
 
         return new PageImpl<>(responseDTOs, pageable, studentPage.getTotalElements());
     }
+
+    @Override
+    public Page<StudentResponseDTO> getStudents(Long schoolId, StudentStatus status, Pageable pageable ) {
+
+        Page<Student> students;
+
+        if (status != null) {
+            students = studentRepository
+                    .findBySchoolIdAndStatus( schoolId,status,pageable);
+        } else {
+            students = studentRepository
+                    .findBySchoolIdAndStatus(
+                            schoolId,
+                            StudentStatus.ACTIVE,
+                            pageable
+                    );
+        }
+
+        return students.map(studentMapper::toResponseDTO);
+
+    }
+
+    @Override
+    @Transactional
+    public StudentResponseDTO updateStudentStatus(
+            Long schoolId,
+            Long studentId,
+            StudentStatusUpdateRequest request
+    ) {
+
+        Student student = studentRepository
+                .findAllTypeOfStudentByIdAndSchoolId(studentId, schoolId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Student",
+                                "id",
+                                studentId
+                        )
+                );
+        if(student.getStatus().equals(request.getStatus())){
+            throw new ValidationException("status", "Student is already " + request.getStatus());
+        }
+        student.setStatus(request.getStatus());
+
+        Student updatedStudent =
+                studentRepository.save(student);
+
+        return studentMapper.toResponseDTO(updatedStudent);
+
+    }
+
 }

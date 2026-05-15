@@ -3,11 +3,13 @@ package com.school.service.impl;
 import com.school.dto.attendance.*;
 import com.school.exception.ResourceNotFoundException;
 import com.school.exception.ValidationException;
+import com.school.mapper.AttendanceMapper;
 import com.school.model.*;
 import com.school.repository.*;
 import com.school.service.attendance.AttendanceService;
 
 import com.school.utilenum.AttendanceStatus;
+import com.school.utilenum.StudentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +31,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final StudentAttendanceRepository attendanceRepository;
     private final StudentRepository studentRepository;
     private final SchoolRepository schoolRepository;
+    private final AttendanceMapper attendanceMapper;
 
     // ============================
     // MARK ATTENDANCE (BULK)
@@ -70,7 +75,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     // ============================
     // GET BY DATE
     // ============================
-    @Override
+    /*@Override
     @Transactional(readOnly = true)
     public List<AttendanceResponseDTO> getAttendanceByDate(Long schoolId, LocalDate date) {
 
@@ -78,6 +83,159 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }*/
+
+    @Override
+    public List<AttendanceByDateResponseDTO> getAttendanceByDate(
+            Long schoolId,
+            LocalDate date
+    ) {
+
+        List<Student> students =
+                studentRepository
+                        .findBySchoolIdAndStatusOrderByFirstNameAsc(
+                                schoolId,
+                                StudentStatus.ACTIVE
+                        );
+
+        List<StudentAttendance> attendanceList =
+                attendanceRepository.findBySchoolIdAndDate(
+                        schoolId,
+                        date
+                );
+
+        Map<Long, StudentAttendance> attendanceMap =
+                attendanceList.stream()
+                        .collect(Collectors.toMap(
+                                a -> a.getStudent().getId(),
+                                a -> a
+                        ));
+
+        return students.stream()
+                .map(student -> {
+
+                    StudentAttendance attendance =
+                            attendanceMap.get(student.getId());
+
+                    return AttendanceByDateResponseDTO.builder()
+                            .attendanceId(
+                                    attendance != null
+                                            ? attendance.getId()
+                                            : null
+                            )
+                            .studentId(student.getId())
+                            .studentName(
+                                    student.getFirstName() +
+                                            " " +
+                                            student.getLastName()
+                            )
+                            .className(
+                                    student.getClassEntity() != null
+                                            ? student.getClassEntity().getName()
+                                            : null
+                            )
+                            .date(date)
+                            .status(
+                                    attendance != null
+                                            ? attendance.getStatus()
+                                            : null
+                            )
+                            .build();
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public AttendanceResponseDTO createAttendance(
+            Long schoolId,
+            AttendanceRequestDTO requestDTO
+    ) {
+
+        Student student = studentRepository
+                .findByIdAndSchoolId(
+                        requestDTO.getStudentId(),
+                        schoolId
+                )
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Student",
+                                "id",
+                                requestDTO.getStudentId()
+                        )
+                );
+
+        if (student.getStatus() != StudentStatus.ACTIVE) {
+
+            throw new ValidationException(
+                    "student",
+                    "Only active students allowed"
+            );
+        }
+
+        Optional<StudentAttendance> existing =
+                attendanceRepository.findByStudentIdAndDate(
+                        requestDTO.getStudentId(),
+                        requestDTO.getDate()
+                );
+
+        if (existing.isPresent()) {
+
+            throw new ValidationException(
+                    "attendance",
+                    "Attendance already exists"
+            );
+        }
+
+        StudentAttendance attendance =
+                new StudentAttendance();
+
+        attendance.setSchool(student.getSchool());
+
+        attendance.setStudent(student);
+
+        attendance.setDate(requestDTO.getDate());
+
+        attendance.setStatus(requestDTO.getStatus());
+
+        StudentAttendance saved =
+                attendanceRepository.save(attendance);
+
+        return attendanceMapper.toResponseDTO(saved);
+    }
+
+    @Override
+    @Transactional
+    public AttendanceResponseDTO updateAttendance(
+            Long schoolId,
+            Long attendanceId,
+            AttendanceUpdateRequestDTO requestDTO
+    ) {
+
+        StudentAttendance attendance =
+                attendanceRepository.findById(attendanceId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Attendance",
+                                        "id",
+                                        attendanceId
+                                )
+                        );
+
+        if (!attendance.getSchool().getId().equals(schoolId)) {
+
+            throw new ValidationException(
+                    "schoolId",
+                    "Attendance does not belong to school"
+            );
+        }
+
+        attendance.setStatus(requestDTO.getStatus());
+
+        StudentAttendance updated =
+                attendanceRepository.save(attendance);
+
+        return attendanceMapper.toResponseDTO(updated);
     }
 
     // ============================

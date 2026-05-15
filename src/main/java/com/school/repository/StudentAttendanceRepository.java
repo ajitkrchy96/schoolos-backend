@@ -18,12 +18,12 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
             LocalDate date,
             Long schoolId
     );
-
+/*
     // ✅ Get all attendance for a date (class-wise later filter in service)
     List<StudentAttendance> findBySchoolIdAndDate(
             Long schoolId,
             LocalDate date
-    );
+    );*/
 
     // ✅ Get student history
     List<StudentAttendance> findByStudentIdAndSchoolIdOrderByDateDesc(
@@ -50,4 +50,15 @@ public interface StudentAttendanceRepository extends JpaRepository<StudentAttend
     """)
     long countAbsent(@Param("schoolId") Long schoolId,
                      @Param("date") LocalDate date);
+
+
+    Optional<StudentAttendance> findByStudentIdAndDate(Long studentId, LocalDate date);
+
+    @Query("""
+                SELECT sa
+                FROM StudentAttendance sa
+                WHERE sa.school.id = :schoolId
+                AND sa.date = :date
+            """)
+    List<StudentAttendance> findBySchoolIdAndDate(@Param("schoolId") Long schoolId, @Param("date") LocalDate date);
 }

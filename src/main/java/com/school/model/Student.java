@@ -1,10 +1,8 @@
 package com.school.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import com.school.utilenum.StudentStatus;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,5 +34,6 @@ public class Student extends BaseEntity {
     private LocalDate dob;
     private String admissionNo;
     private String phone;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private StudentStatus status;
 }

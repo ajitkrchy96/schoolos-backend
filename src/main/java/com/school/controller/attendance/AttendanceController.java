@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
 
-    // ============================
+   /* // ============================
     // MARK ATTENDANCE
     // ============================
     @PostMapping
@@ -32,9 +33,9 @@ public class AttendanceController {
         log.info("Marking attendance for school {}", schoolId);
 
         return ResponseEntity.ok(attendanceService.markAttendance(schoolId, dtoList));
-    }
+    }*/
 
-    // ============================
+/*    // ============================
     // GET BY DATE
     // ============================
     @GetMapping("/date")
@@ -43,7 +44,7 @@ public class AttendanceController {
             @RequestParam LocalDate date) {
 
         return ResponseEntity.ok(attendanceService.getAttendanceByDate(schoolId, date));
-    }
+    }*/
 
     // ============================
     // STUDENT HISTORY
@@ -65,5 +66,62 @@ public class AttendanceController {
             @RequestParam LocalDate date) {
 
         return ResponseEntity.ok(attendanceService.getAttendanceSummary(schoolId, date));
+    }
+
+    @GetMapping("/date")
+    public ResponseEntity<List<AttendanceByDateResponseDTO>>
+    getAttendanceByDate(
+
+            @PathVariable Long schoolId,
+
+            @RequestParam LocalDate date
+    ) {
+
+        return ResponseEntity.ok(
+                attendanceService.getAttendanceByDate(
+                        schoolId,
+                        date
+                )
+        );
+    }
+
+    @PostMapping
+    public ResponseEntity<AttendanceResponseDTO>
+    createAttendance(
+
+            @PathVariable Long schoolId,
+
+            @Valid
+            @RequestBody AttendanceRequestDTO requestDTO
+    ) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(
+                        attendanceService.createAttendance(
+                                schoolId,
+                                requestDTO
+                        )
+                );
+    }
+
+    @PatchMapping("/{attendanceId}")
+    public ResponseEntity<AttendanceResponseDTO>
+    updateAttendance(
+
+            @PathVariable Long schoolId,
+
+            @PathVariable Long attendanceId,
+
+            @Valid
+            @RequestBody AttendanceUpdateRequestDTO requestDTO
+    ) {
+
+        return ResponseEntity.ok(
+                attendanceService.updateAttendance(
+                        schoolId,
+                        attendanceId,
+                        requestDTO
+                )
+        );
     }
 }

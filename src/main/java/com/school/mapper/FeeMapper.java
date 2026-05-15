@@ -22,7 +22,7 @@ public class FeeMapper {
                 .totalAmount(fee.getTotalAmount())
                 .paidAmount(fee.getPaidAmount())
                 .dueAmount(fee.getDueAmount())
-                .status(fee.getStatus().name())
+                .status(fee.getStatus())
                 .dueDate(fee.getDueDate())
                 .lastPaymentDate(fee.getLastPaymentDate())
                 .build();

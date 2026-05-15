@@ -3,5 +3,6 @@ package com.school.utilenum;
 public enum PaymentMode {
     CASH,
     UPI,
-    ONLINE
+    CARD,
+    BANK_TRANSFER
 }

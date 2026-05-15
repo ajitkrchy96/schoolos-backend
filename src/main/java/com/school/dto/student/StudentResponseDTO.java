@@ -2,6 +2,8 @@ package com.school.dto.student;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.school.utilenum.StudentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +22,7 @@ public class    StudentResponseDTO {
     private LocalDate dob;
     private String admissionNo;
     private String phone;
-    private String status;
+    private StudentStatus status;
     private Long schoolId;
     private String schoolName;
     private Long classId;

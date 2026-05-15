@@ -7,6 +7,7 @@ import com.school.model.Parent;
 import com.school.model.School;
 import com.school.model.Section;
 import com.school.model.Student;
+import com.school.utilenum.StudentStatus;
 import org.springframework.stereotype.Component;
 
 
@@ -26,7 +27,7 @@ public class StudentMapper {
         student.setDob(dto.getDob());
         student.setAdmissionNo(admissionNo);
         student.setPhone(dto.getPhone());
-        student.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
+        student.setStatus(dto.getStatus() != null ? dto.getStatus() : StudentStatus.ACTIVE);
         student.setSchool(school);
             student.setParent(parent);
         student.setClassEntity(classEntity);

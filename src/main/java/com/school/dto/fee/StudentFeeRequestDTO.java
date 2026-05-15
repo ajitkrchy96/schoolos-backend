@@ -1,5 +1,6 @@
 package com.school.dto.fee;
 
+import com.school.utilenum.StudentStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -33,5 +34,5 @@ public class StudentFeeRequestDTO {
     private LocalDate dueDate;
 
     @NotBlank(message = "Status is required")
-    private String status;
+    private StudentStatus status;
 }

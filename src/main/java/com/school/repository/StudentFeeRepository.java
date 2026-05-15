@@ -68,4 +68,21 @@ public interface StudentFeeRepository extends JpaRepository<StudentFee, Long> {
             AND f.school.id = :schoolId
             """)
     Double getTotalDueAmount(Long studentId, Long schoolId);
+
+    Page<StudentFee> findBySchoolId(Long schoolId, Pageable pageable);
+
+    @Query("""
+                SELECT sf
+                FROM StudentFee sf
+                WHERE sf.school.id = :schoolId
+                AND (
+                    LOWER(sf.student.firstName) LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR LOWER(sf.student.lastName) LIKE LOWER(CONCAT('%', :search, '%'))
+                    OR LOWER(sf.student.admissionNo) LIKE LOWER(CONCAT('%', :search, '%'))
+                )
+            """)
+    Page<StudentFee> findBySchoolIdAndStudentSearch(@Param("schoolId") Long schoolId, @Param("search") String search, Pageable pageable);
+
+    List<StudentFee> findAllBySchoolId(Long schoolId);
+
 }

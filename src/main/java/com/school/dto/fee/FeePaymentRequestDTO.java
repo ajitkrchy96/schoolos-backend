@@ -15,10 +15,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FeePaymentRequestDTO {
 
-    @NotNull(message = "School ID is required")
-    private Long schoolId;
+   /* @NotNull(message = "School ID is required")
+    private Long schoolId;*/
 
-    @NotNull(message = "Student fee ID is required")
+   /* @NotNull(message = "Student fee ID is required")
     private Long studentFeeId;
 
     @NotNull(message = "Amount is required")
@@ -31,5 +31,17 @@ public class FeePaymentRequestDTO {
     @NotBlank(message = "Transaction ID is required")
     private String transactionId;
 
+    private String remarks;*/
+
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be positive")
+    private BigDecimal amount;
+
+    @NotBlank(message = "Payment mode is required")
+    private String paymentMode;
+
     private String remarks;
+
+    private String transactionId;
+
 }

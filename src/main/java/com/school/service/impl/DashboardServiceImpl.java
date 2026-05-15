@@ -6,6 +6,7 @@ import com.school.repository.*;
 import com.school.service.dashboard.DashboardService;
 
 import com.school.utilenum.FeeStatus;
+import com.school.utilenum.StudentStatus;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class DashboardServiceImpl implements DashboardService {
         validateSchool(schoolId);
 
         // Students
-        long totalStudents = studentRepository.countBySchoolIdAndStatus(schoolId, "ACTIVE");
+        long totalStudents = studentRepository.countBySchoolIdAndStatus(schoolId, StudentStatus.ACTIVE);
 
         // Attendance
         LocalDate today = LocalDate.now();

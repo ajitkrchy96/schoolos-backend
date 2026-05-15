@@ -23,6 +23,26 @@ public class FeeController {
 
     private final FeeService feeService;
 
+    @GetMapping
+    public ResponseEntity<Page<StudentFeeResponseDTO>> getAllFees(
+
+            @PathVariable Long schoolId,
+            @RequestParam(required = false)
+            Long classId,
+            @RequestParam(required = false)
+            Long sectionId,
+            @RequestParam(required = false)
+            String search, Pageable pageable
+    ) {
+
+        log.info("Fetching all fees for school {} with search {}", schoolId, search);
+        //TODO need to implement the service logic for the classId & sectionId
+        return ResponseEntity.ok(
+                feeService.getAllFees(schoolId, search, pageable)
+        );
+    }
+
+
     // ============================
     // CREATE STUDENT FEE
     // ============================
@@ -38,7 +58,7 @@ public class FeeController {
     }
 
     // ============================
-    // GET STUDENT FEE
+    // GET STUDENT FEEx`
     // ============================
     @GetMapping("/student/{studentId}")
     public ResponseEntity<StudentFeeResponseDTO> getStudentFee(
@@ -88,5 +108,18 @@ public class FeeController {
         log.info("Fetching payment history for studentFeeId {} in school {}", studentFeeId, schoolId);
 
         return ResponseEntity.ok(feeService.getPaymentHistory(schoolId, studentFeeId));
+    }
+    // ============================
+// FEES SUMMARY
+// ============================
+    @GetMapping("/summary")
+    public ResponseEntity<FeeSummaryResponseDTO> getFeeSummary(
+            @PathVariable Long schoolId) {
+
+        log.info("Fetching fee summary for school {}", schoolId);
+
+        return ResponseEntity.ok(
+                feeService.getFeeSummary(schoolId)
+        );
     }
 }

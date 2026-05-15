@@ -190,3 +190,7 @@ ALTER TABLE schoolos.fee_payment
 
 ALTER TABLE schoolos.app_user
     ADD COLUMN reference_id VARCHAR(255);
+
+ALTER TABLE schoolos.student_attendance
+    ADD CONSTRAINT uk_student_attendance_date
+        UNIQUE(student_id, date);

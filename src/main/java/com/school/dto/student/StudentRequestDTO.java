@@ -1,5 +1,6 @@
 package com.school.dto.student;
 
+import com.school.utilenum.StudentStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -37,14 +38,14 @@ public class StudentRequestDTO {
 //    @NotBlank(message = "Admission number is required")
 //    @Size(min = 3, max = 20, message = "Admission number must be between 3 and 20 characters")
 //  Backed generating
-    private String admissionNo;
+/*    private String admissionNo;*/
 
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be exactly 10 digits")
     private String phone;
 
-    @NotNull(message = "School ID is required")
-    private Long schoolId;
+/*    @NotNull(message = "School ID is required")
+    private Long schoolId;*/
 
     @NotNull(message = "Class ID is required")
     private Long classId;
@@ -52,7 +53,7 @@ public class StudentRequestDTO {
     @NotNull(message = "Section ID is required")
     private Long sectionId;
 
-    private String status;
+    private StudentStatus status;
 /*    @NotNull(message = "Parent ID is required")
     private Long parentId;*/
 

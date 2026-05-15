@@ -154,6 +154,74 @@ public class FeeServiceImpl implements FeeService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<StudentFeeResponseDTO> getAllFees(
+            Long schoolId,
+            String search,
+            Pageable pageable) {
+
+        Page<StudentFee> page;
+
+        if (search != null && !search.trim().isEmpty()) {
+
+            page = studentFeeRepository
+                    .findBySchoolIdAndStudentSearch(
+                            schoolId,
+                            search.trim(),
+                            pageable
+                    );
+
+        } else {
+
+            page = studentFeeRepository.findBySchoolId(
+                    schoolId,
+                    pageable
+            );
+        }
+
+        return page.map(feeMapper::toResponseDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FeeSummaryResponseDTO getFeeSummary(Long schoolId) {
+
+        List<StudentFee> fees = studentFeeRepository.findAllBySchoolId(schoolId);
+
+        long totalStudents = fees.size();
+
+        long paidStudents = fees.stream()
+                .filter(f -> "PAID".equals(f.getStatus().name()))
+                .count();
+
+        long partialStudents = fees.stream()
+                .filter(f -> "PARTIAL".equals(f.getStatus().name()))
+                .count();
+
+        long pendingStudents = fees.stream()
+                .filter(f -> "PENDING".equals(f.getStatus().name()))
+                .count();
+
+        BigDecimal totalCollected = fees.stream()
+                .map(StudentFee::getPaidAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal totalDue = fees.stream()
+                .map(StudentFee::getDueAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return FeeSummaryResponseDTO.builder()
+                .totalStudents(totalStudents)
+                .paidStudents(paidStudents)
+                .partialStudents(partialStudents)
+                .pendingStudents(pendingStudents)
+                .totalCollected(totalCollected)
+                .totalDue(totalDue)
+                .build();
+    }
+
+
     // ============================
     // HELPER
     // ============================

@@ -3,6 +3,9 @@ package com.school.dto.fee;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.school.utilenum.FeeStatus;
+import com.school.utilenum.StudentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +28,7 @@ public class StudentFeeResponseDTO {
     private BigDecimal totalAmount;
     private BigDecimal paidAmount;
     private BigDecimal dueAmount;
-    private String status;
+    private FeeStatus status;
     private LocalDate dueDate;
     private LocalDateTime lastPaymentDate;
     private LocalDateTime createdAt;

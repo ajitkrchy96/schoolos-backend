@@ -18,4 +18,8 @@ public interface FeeService {
     Page<StudentFeeResponseDTO> getPendingFees(Long schoolId, Pageable pageable);
 
     List<FeePaymentResponseDTO> getPaymentHistory(Long schoolId, Long studentFeeId);
+
+    Page<StudentFeeResponseDTO> getAllFees(Long schoolId, String search, Pageable pageable);
+
+    FeeSummaryResponseDTO getFeeSummary(Long schoolId);
 }

@@ -9,9 +9,15 @@ public interface AttendanceService {
 
     List<AttendanceResponseDTO> markAttendance(Long schoolId, List<AttendanceRequestDTO> dtoList);
 
-    List<AttendanceResponseDTO> getAttendanceByDate(Long schoolId, LocalDate date);
+/*    List<AttendanceResponseDTO> getAttendanceByDate(Long schoolId, LocalDate date);*/
 
     List<AttendanceResponseDTO> getStudentAttendance(Long schoolId, Long studentId);
 
     AttendanceSummaryDTO getAttendanceSummary(Long schoolId, LocalDate date);
+
+    List<AttendanceByDateResponseDTO> getAttendanceByDate(Long schoolId, LocalDate date);
+
+    AttendanceResponseDTO createAttendance(Long schoolId, AttendanceRequestDTO requestDTO);
+
+    AttendanceResponseDTO updateAttendance(Long schoolId, Long attendanceId, AttendanceUpdateRequestDTO requestDTO);
 }

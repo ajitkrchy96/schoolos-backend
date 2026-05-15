@@ -3,6 +3,8 @@ package com.school.service.student;
 import com.school.dto.student.StudentFilterDTO;
 import com.school.dto.student.StudentRequestDTO;
 import com.school.dto.student.StudentResponseDTO;
+import com.school.dto.student.StudentStatusUpdateRequest;
+import com.school.utilenum.StudentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -63,4 +65,9 @@ public interface StudentService {
      * @return a page of matching student response DTOs
      */
     Page<StudentResponseDTO> searchStudents(Long schoolId, String searchTerm, Pageable pageable);
+
+    Page<StudentResponseDTO> getStudents(Long schoolId, StudentStatus status, Pageable pageable);
+
+    StudentResponseDTO updateStudentStatus( Long schoolId, Long studentId,StudentStatusUpdateRequest request);
+
 }

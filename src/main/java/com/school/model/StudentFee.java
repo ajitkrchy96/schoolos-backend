@@ -29,6 +29,9 @@ public class StudentFee extends BaseEntity {
 
     @Column(nullable = false)
     private BigDecimal totalAmount;
+    //TODO need to check both required or not totalAmount & totalFee
+  //  @Column(nullable = false)
+  //  private BigDecimal totalFee;
 
     @Column(nullable = false)
     private BigDecimal paidAmount = BigDecimal.ZERO;
