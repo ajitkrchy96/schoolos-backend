@@ -74,13 +74,19 @@ public class AttendanceController {
 
             @PathVariable Long schoolId,
 
-            @RequestParam LocalDate date
+            @RequestParam LocalDate date,
+            @RequestParam(required = false) Long classId,
+            @RequestParam(required = false) Long sectionId,
+            @RequestParam(required = false) String searchTerm
     ) {
 
         return ResponseEntity.ok(
                 attendanceService.getAttendanceByDate(
                         schoolId,
-                        date
+                        date,
+                        classId,
+                        sectionId,
+                        searchTerm
                 )
         );
     }

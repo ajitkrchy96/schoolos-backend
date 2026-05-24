@@ -15,7 +15,7 @@ public interface AttendanceService {
 
     AttendanceSummaryDTO getAttendanceSummary(Long schoolId, LocalDate date);
 
-    List<AttendanceByDateResponseDTO> getAttendanceByDate(Long schoolId, LocalDate date);
+    List<AttendanceByDateResponseDTO> getAttendanceByDate(Long schoolId, LocalDate date, Long classId, Long sectionId, String searchTerm);
 
     AttendanceResponseDTO createAttendance(Long schoolId, AttendanceRequestDTO requestDTO);
 

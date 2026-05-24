@@ -88,58 +88,46 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public List<AttendanceByDateResponseDTO> getAttendanceByDate(
             Long schoolId,
-            LocalDate date
+            LocalDate date,
+            Long classId,
+            Long sectionId,
+            String searchTerm
     ) {
 
-        List<Student> students =
-                studentRepository
-                        .findBySchoolIdAndStatusOrderByFirstNameAsc(
-                                schoolId,
-                                StudentStatus.ACTIVE
-                        );
+        String searchPattern = searchTerm != null && !searchTerm.trim().isEmpty()
+                ? "%" + searchTerm.trim().toLowerCase() + "%"
+                : null;
 
-        List<StudentAttendance> attendanceList =
-                attendanceRepository.findBySchoolIdAndDate(
-                        schoolId,
-                        date
-                );
+        List<Object[]> rows = null;
+        if (searchPattern == null) {
+            rows = studentRepository.findStudentAttendanceByDateAndFilters(
+                    schoolId,
+                    date,
+                    classId,
+                    sectionId
+            );
+        }else {
+            rows = studentRepository.findStudentAttendanceByDateAndFilters(
+                    schoolId,
+                    date,
+                    classId,
+                    sectionId,
+                    searchPattern
+            );
+        }
 
-        Map<Long, StudentAttendance> attendanceMap =
-                attendanceList.stream()
-                        .collect(Collectors.toMap(
-                                a -> a.getStudent().getId(),
-                                a -> a
-                        ));
-
-        return students.stream()
-                .map(student -> {
-
-                    StudentAttendance attendance =
-                            attendanceMap.get(student.getId());
+        return rows.stream()
+                .map(row -> {
+                    Student student = (Student) row[0];
+                    StudentAttendance attendance = (StudentAttendance) row[1];
 
                     return AttendanceByDateResponseDTO.builder()
-                            .attendanceId(
-                                    attendance != null
-                                            ? attendance.getId()
-                                            : null
-                            )
+                            .attendanceId(attendance != null ? attendance.getId() : null)
                             .studentId(student.getId())
-                            .studentName(
-                                    student.getFirstName() +
-                                            " " +
-                                            student.getLastName()
-                            )
-                            .className(
-                                    student.getClassEntity() != null
-                                            ? student.getClassEntity().getName()
-                                            : null
-                            )
+                            .studentName(student.getFirstName() + " " + student.getLastName())
+                            .className(student.getClassEntity() != null ? student.getClassEntity().getName() : null)
                             .date(date)
-                            .status(
-                                    attendance != null
-                                            ? attendance.getStatus()
-                                            : null
-                            )
+                            .status(attendance != null ? attendance.getStatus() : null)
                             .build();
                 })
                 .toList();

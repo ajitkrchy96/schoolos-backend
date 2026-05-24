@@ -194,3 +194,14 @@ ALTER TABLE schoolos.app_user
 ALTER TABLE schoolos.student_attendance
     ADD CONSTRAINT uk_student_attendance_date
         UNIQUE(student_id, date);
+
+ALTER TABLE schoolos.student
+ALTER COLUMN admission_no TYPE VARCHAR(50)
+;
+
+ALTER TABLE schoolos.student
+ALTER COLUMN phone TYPE VARCHAR(50)
+;
+
+-- Removed forced convert_from/bytea handling: ensure columns are VARCHAR in DB
+

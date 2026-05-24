@@ -134,7 +134,7 @@ public class StudentController {
     @GetMapping("/search")
     public ResponseEntity<Page<StudentResponseDTO>> searchStudents(
             @PathVariable Long schoolId,
-            @RequestParam String searchTerm,
+            @RequestParam(required = false) String searchTerm,
             @PageableDefault(size = 20, page = 0, sort = "firstName", direction = Sort.Direction.ASC) Pageable pageable) {
         log.info("GET request to search students in school ID: {} with term: {}", schoolId, searchTerm);
         Page<StudentResponseDTO> response = studentService.searchStudents(schoolId, searchTerm, pageable);

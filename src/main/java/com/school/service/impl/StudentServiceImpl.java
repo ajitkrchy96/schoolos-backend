@@ -19,6 +19,7 @@ import com.school.repository.SchoolRepository;
 import com.school.repository.SectionRepository;
 import com.school.repository.StudentRepository;
 import com.school.service.student.StudentService;
+import com.school.specification.StudentSpecification;
 import com.school.utilenum.StudentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -92,6 +93,10 @@ public class StudentServiceImpl implements StudentService {
         Section section = sectionRepository.findByIdAndSchoolId(requestDTO.getSectionId(), schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Section", "id", requestDTO.getSectionId()));
 
+        if (!section.getClassEntity().getId().equals(requestDTO.getClassId())) {
+            throw new ValidationException("sectionId", "Selected section does not belong to selected class");
+        }
+
         Long studentCount = studentRepository.countBySchoolId(schoolId);
         String admissionNo = "SCH-" + java.time.Year.now().getValue() + "-" + String.format("%04d", studentCount + 1);
 
@@ -128,28 +133,10 @@ public class StudentServiceImpl implements StudentService {
         if (!schoolRepository.existsById(schoolId)) {
             throw new ResourceNotFoundException("School", "id", schoolId);
         }
-
-        Page<Student> studentPage;
-
-        // Apply search filter if provided
-        StudentStatus status = filterDTO.getStatus() != null ? filterDTO.getStatus() : StudentStatus.ACTIVE;
-        if (filterDTO.getSearchTerm() != null && !filterDTO.getSearchTerm().trim().isEmpty()) {
-            studentPage = studentRepository.searchBySchoolId(schoolId,  filterDTO.getSearchTerm().trim(), pageable);
-        }
-        // Apply class and section filters
-        else if (filterDTO.getClassId() != null || filterDTO.getSectionId() != null || filterDTO.getStatus() != null) {
-            studentPage = studentRepository.findBySchoolIdWithFilters(
-                    schoolId,
-                    filterDTO.getClassId(),
-                    filterDTO.getSectionId(),
-                    status,
-                    pageable
-            );
-        }
-        // Get all active students
-        else {
-            studentPage = studentRepository.findAllActiveBySchoolId(schoolId, pageable);
-        }
+        //TODO need to check
+        filterDTO.setStatus(filterDTO.getStatus() != null ? filterDTO.getStatus() : StudentStatus.ACTIVE);
+        var spec = StudentSpecification.build(schoolId, filterDTO);
+        Page<Student> studentPage = studentRepository.findAll(spec, pageable);
 
         List<StudentResponseDTO> responseDTOs = studentPage.getContent()
                 .stream()
@@ -236,6 +223,12 @@ public class StudentServiceImpl implements StudentService {
         if (!student.getSection().getId().equals(requestDTO.getSectionId())) {
             section = sectionRepository.findByIdAndSchoolId(requestDTO.getSectionId(), schoolId)
                     .orElseThrow(() -> new ResourceNotFoundException("Section", "id", requestDTO.getSectionId()));
+        } else {
+            section = student.getSection();
+        }
+
+        if (!section.getClassEntity().getId().equals(requestDTO.getClassId())) {
+            throw new ValidationException("sectionId", "Selected section does not belong to selected class");
         }
 
         // Update student
@@ -268,15 +261,20 @@ public class StudentServiceImpl implements StudentService {
     public Page<StudentResponseDTO> searchStudents(Long schoolId, String searchTerm, Pageable pageable) {
         log.debug("Searching students in school ID: {} with term: {}", schoolId, searchTerm);
 
-        if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            throw new ValidationException("searchTerm", "Search term cannot be empty");
-        }
+        String normalizedSearchTerm = StringUtils.hasText(searchTerm)
+                ? searchTerm.trim()
+                : null;
 
-        // Validate school exists
         if (!schoolRepository.existsById(schoolId)) {
             throw new ResourceNotFoundException("School", "id", schoolId);
         }
-        Page<Student> studentPage = studentRepository.searchBySchoolId(schoolId, searchTerm.trim(), pageable);
+
+        Page<Student> studentPage;
+        if (normalizedSearchTerm == null) {
+            studentPage = studentRepository.findBySchoolId(schoolId, pageable);
+        } else {
+            studentPage = studentRepository.searchBySchoolId(schoolId, normalizedSearchTerm, pageable);
+        }
 
         List<StudentResponseDTO> responseDTOs = studentPage.getContent()
                 .stream()

@@ -72,16 +72,35 @@ public interface StudentFeeRepository extends JpaRepository<StudentFee, Long> {
     Page<StudentFee> findBySchoolId(Long schoolId, Pageable pageable);
 
     @Query("""
+        SELECT sf
+        FROM StudentFee sf
+        JOIN sf.student s
+        WHERE sf.school.id = :schoolId
+          AND s.status = 'ACTIVE'
+          AND (:classId IS NULL OR s.classEntity.id = :classId)
+          AND (:sectionId IS NULL OR s.section.id = :sectionId)
+        """)
+    Page<StudentFee> findBySchoolIdAndAcademicFilters(
+            @Param("schoolId") Long schoolId,
+            @Param("classId") Long classId,
+            @Param("sectionId") Long sectionId,
+            @Param("search") String search,
+            Pageable pageable);
+
+    
+
+    @Query("""
                 SELECT sf
                 FROM StudentFee sf
                 WHERE sf.school.id = :schoolId
                 AND (
-                    LOWER(sf.student.firstName) LIKE LOWER(CONCAT('%', :search, '%'))
-                    OR LOWER(sf.student.lastName) LIKE LOWER(CONCAT('%', :search, '%'))
-                    OR LOWER(sf.student.admissionNo) LIKE LOWER(CONCAT('%', :search, '%'))
+                                        LOWER(sf.student.firstName) LIKE LOWER(:searchPattern) OR
+                                        LOWER(sf.student.lastName) LIKE LOWER(:searchPattern) OR
+                                        sf.student.admissionNo LIKE :searchPattern OR
+                                        sf.student.phone LIKE :searchPattern
                 )
             """)
-    Page<StudentFee> findBySchoolIdAndStudentSearch(@Param("schoolId") Long schoolId, @Param("search") String search, Pageable pageable);
+    Page<StudentFee> findBySchoolIdAndStudentSearch(@Param("schoolId") Long schoolId, @Param("searchPattern") String searchPattern, Pageable pageable);
 
     List<StudentFee> findAllBySchoolId(Long schoolId);
 

@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface MasterDataService {
 
-List<ClassResponseDTO> getAllClasses(Long schoolId);
+    List<ClassResponseDTO> getAllClasses(Long schoolId);
 
-List<SectionResponseDTO> getAllSections(Long schoolId);
+    List<SectionResponseDTO> getAllSections(Long schoolId, Long classId);
 
 }
