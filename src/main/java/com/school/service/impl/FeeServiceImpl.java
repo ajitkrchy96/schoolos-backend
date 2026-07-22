@@ -20,7 +20,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -158,29 +162,95 @@ public class FeeServiceImpl implements FeeService {
     @Transactional(readOnly = true)
     public Page<StudentFeeResponseDTO> getAllFees(
             Long schoolId,
+            Long classId,
+            Long sectionId,
             String search,
             Pageable pageable) {
 
-        Page<StudentFee> page;
-
-        if (search != null && !search.trim().isEmpty()) {
-
-            page = studentFeeRepository
-                    .findBySchoolIdAndStudentSearch(
-                            schoolId,
-                            search.trim(),
-                            pageable
-                    );
-
-        } else {
-
-            page = studentFeeRepository.findBySchoolId(
+        Page<Object[]> page = null;
+        String isSearch = search != null && !search.trim().isEmpty() ? search.trim() : null;
+        if (isSearch != null) {
+            page = studentRepository.findStudentsWithFees(
                     schoolId,
+                    classId,
+                    sectionId,
+                    isSearch,
+                    pageable
+            );
+        }else {
+            page = studentRepository.findStudentsWithFees(
+                    schoolId,
+                    classId,
+                    sectionId,
                     pageable
             );
         }
 
-        return page.map(feeMapper::toResponseDTO);
+
+        Set<Long> classIds = page.getContent().stream()
+                .map(objects -> (Student) objects[0])
+                .map(student -> student.getClassEntity() != null ? student.getClassEntity().getId() : null)
+                .filter(id -> id != null)
+                .collect(Collectors.toCollection(HashSet::new));
+
+        Map<Long, FeeStructure> defaultStructures = getDefaultFeeStructureByClass(schoolId, classIds);
+
+        return page.map(objects -> {
+            Student student = (Student) objects[0];
+            StudentFee fee = (StudentFee) objects[1];
+            FeeStructure defaultStructure = student.getClassEntity() != null
+                    ? defaultStructures.get(student.getClassEntity().getId())
+                    : null;
+            return feeMapper.toResponseDTO(student, fee, defaultStructure);
+        });
+    }
+
+    @Override
+    public StudentFeeResponseDTO createAndPayFee(Long schoolId, CreateAndPayFeeRequestDTO dto) {
+        validateSchool(schoolId);
+
+        Student student = studentRepository.findByIdAndSchoolId(dto.getStudentId(), schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student", "id", dto.getStudentId()));
+
+        FeeStructure structure = feeStructureRepository.findByIdAndSchoolId(dto.getFeeStructureId(), schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException("FeeStructure", "id", dto.getFeeStructureId()));
+
+        StudentFee fee = studentFeeRepository.findByStudentIdAndSchoolId(dto.getStudentId(), schoolId)
+                .orElseGet(() -> {
+                    StudentFee newFee = new StudentFee();
+                    newFee.setSchool(student.getSchool());
+                    newFee.setStudent(student);
+                    newFee.setFeeStructure(structure);
+                    newFee.setTotalAmount(structure.getAmount());
+                    newFee.setPaidAmount(BigDecimal.ZERO);
+                    newFee.setDueAmount(structure.getAmount());
+                    newFee.setStatus(FeeStatus.PENDING);
+                    newFee.setDueDate(null);
+                    return newFee;
+                });
+
+        BigDecimal paymentAmount = dto.getPaymentAmount();
+        if (paymentAmount.compareTo(fee.getDueAmount()) > 0) {
+            throw new ValidationException("amount", "Payment exceeds due amount");
+        }
+
+        fee.applyPayment(paymentAmount);
+
+        StudentFee savedFee = studentFeeRepository.save(fee);
+
+        FeePayment payment = new FeePayment();
+        payment.setSchool(savedFee.getSchool());
+        payment.setStudentFee(savedFee);
+        payment.setAmount(paymentAmount);
+        payment.setPaymentDate(LocalDateTime.now());
+        payment.setPaymentMode(PaymentMode.valueOf(dto.getPaymentMethod()));
+        payment.setTransactionId(dto.getTransactionId());
+        payment.setRemarks(dto.getRemarks());
+        payment.setReceiptNumber("RCPT-" + System.currentTimeMillis());
+
+        feePaymentRepository.save(payment);
+
+        return feeMapper.toResponseDTO(savedFee);
     }
 
     @Override
@@ -225,6 +295,22 @@ public class FeeServiceImpl implements FeeService {
     // ============================
     // HELPER
     // ============================
+    private Map<Long, FeeStructure> getDefaultFeeStructureByClass(Long schoolId, Set<Long> classIds) {
+        if (classIds == null || classIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        List<FeeStructure> structures = feeStructureRepository.findBySchoolIdAndClassEntityIdIn(schoolId, classIds);
+        Map<Long, FeeStructure> result = new HashMap<>();
+        for (FeeStructure structure : structures) {
+            Long classId = structure.getClassEntity() != null ? structure.getClassEntity().getId() : null;
+            if (classId != null && !result.containsKey(classId)) {
+                result.put(classId, structure);
+            }
+        }
+        return result;
+    }
+
     private void validateSchool(Long schoolId) {
         if (!schoolRepository.existsById(schoolId)) {
             throw new ResourceNotFoundException("School", "id", schoolId);

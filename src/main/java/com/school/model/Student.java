@@ -28,12 +28,20 @@ public class Student extends BaseEntity {
     @JoinColumn(name = "section_id", nullable = false)
     private Section section;
 
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
     private String gender;
     private LocalDate dob;
+
+    @Column(name = "admission_no")
     private String admissionNo;
+
+    @Column(name = "phone")
     private String phone;
+
     @Enumerated(EnumType.STRING)
     private StudentStatus status;
 }

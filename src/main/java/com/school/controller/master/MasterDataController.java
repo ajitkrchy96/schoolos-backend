@@ -25,10 +25,11 @@ public class MasterDataController {
 
     @GetMapping("/sections")
     public List<SectionResponseDTO> getSections(
-            @PathVariable Long schoolId
+            @PathVariable Long schoolId,
+            @RequestParam(required = false) Long classId
     ) {
 
-        return masterDataService.getAllSections(schoolId);
+        return masterDataService.getAllSections(schoolId, classId);
     }
 
 }

@@ -35,10 +35,9 @@ public class FeeController {
             String search, Pageable pageable
     ) {
 
-        log.info("Fetching all fees for school {} with search {}", schoolId, search);
-        //TODO need to implement the service logic for the classId & sectionId
+        log.info("Fetching all fees for school {} with classId: {}, sectionId: {}, search: {}", schoolId, classId, sectionId, search);
         return ResponseEntity.ok(
-                feeService.getAllFees(schoolId, search, pageable)
+                feeService.getAllFees(schoolId, classId, sectionId, search, pageable)
         );
     }
 
@@ -82,6 +81,19 @@ public class FeeController {
         log.info("Processing payment for studentFeeId {} in school {}", studentFeeId, schoolId);
 
         return ResponseEntity.ok(feeService.payFee(schoolId, studentFeeId, dto));
+    }
+
+    // ============================
+    // CREATE AND PAY FEE
+    // ============================
+    @PostMapping("/create-and-pay")
+    public ResponseEntity<StudentFeeResponseDTO> createAndPayFee(
+            @PathVariable Long schoolId,
+            @Valid @RequestBody CreateAndPayFeeRequestDTO dto) {
+
+        log.info("Creating and paying fee for student {} in school {}", dto.getStudentId(), schoolId);
+
+        return ResponseEntity.ok(feeService.createAndPayFee(schoolId, dto));
     }
 
     // ============================

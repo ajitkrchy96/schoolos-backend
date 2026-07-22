@@ -35,10 +35,14 @@ public class MasterDataServiceImpl implements MasterDataService {
     }
 
     @Override
-    public List<SectionResponseDTO> getAllSections(Long schoolId) {
+    public List<SectionResponseDTO> getAllSections(Long schoolId, Long classId) {
 
-        List<Section> sections =
-                sectionRepository.findBySchoolIdOrderByNameAsc(schoolId);
+        List<Section> sections;
+        if (classId != null) {
+            sections = sectionRepository.findBySchoolIdAndClassEntityIdOrderByNameAsc(schoolId, classId);
+        } else {
+            sections = sectionRepository.findBySchoolIdOrderByNameAsc(schoolId);
+        }
 
         return sections.stream()
                 .map(s -> SectionResponseDTO.builder()
