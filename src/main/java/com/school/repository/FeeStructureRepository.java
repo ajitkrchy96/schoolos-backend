@@ -18,4 +18,6 @@ public interface FeeStructureRepository extends JpaRepository<FeeStructure, Long
 
     List<FeeStructure> findBySchoolIdAndClassEntityIdIn(Long schoolId, Iterable<Long> classEntityIds);
 
+    Optional<FeeStructure> findBySchoolIdAndClassEntityIdAndName(Long schoolId, Long classEntityId, String name);
+
 }

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NotificationLogRepository extends JpaRepository<NotificationLog, Long> {
@@ -13,4 +14,6 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
     List<NotificationLog> findBySchoolIdOrderBySentAtDesc(Long schoolId);
 
     List<NotificationLog> findByStudentIdAndSchoolId(Long studentId, Long schoolId);
+
+    Optional<NotificationLog> findBySchoolIdAndMessage(Long schoolId, String message);
 }

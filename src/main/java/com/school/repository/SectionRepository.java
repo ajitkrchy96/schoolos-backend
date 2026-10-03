@@ -19,5 +19,7 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
 
     List<Section> findBySchoolIdAndClassEntityIdOrderByNameAsc(Long schoolId, Long classId);
 
+    Optional<Section> findBySchoolIdAndClassEntityIdAndName(Long schoolId, Long classId, String name);
+
 
 }

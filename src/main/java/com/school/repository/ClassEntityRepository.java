@@ -17,4 +17,6 @@ public interface ClassEntityRepository extends JpaRepository<ClassEntity, Long> 
 
     List<ClassEntity> findBySchoolIdOrderByNameAsc(Long schoolId);
 
+    Optional<ClassEntity> findBySchoolIdAndName(Long schoolId, String name);
+
 }

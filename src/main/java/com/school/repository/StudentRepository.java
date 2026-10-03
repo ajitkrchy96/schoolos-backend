@@ -57,6 +57,8 @@ public interface StudentRepository extends JpaRepository<Student, Long>, JpaSpec
 
     boolean existsByAdmissionNoAndSchoolId(String admissionNo, Long schoolId);
 
+        java.util.Optional<Student> findByAdmissionNoAndSchoolId(String admissionNo, Long schoolId);
+
     @Query("""
             SELECT s FROM Student s
             LEFT JOIN FETCH s.classEntity
